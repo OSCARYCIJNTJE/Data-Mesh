@@ -1,0 +1,7 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.project.sourcePaths": [
+        "construction-dashboard/src/main/java/construction_dashboard"
+    ],
+    "java.compile.nullAnalysis.mode": "disabled"
+}
