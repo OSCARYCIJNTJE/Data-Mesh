@@ -16,14 +16,17 @@ import construction.AlertEvent;
 
 public class ConstructionAlertStreamApp {
 
-    public static void main(String[] args) {
+    public static KafkaStreams start() {
+
+        String bootstrapServers = System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
+
 
         // ======================================================
         // CONFIG
         // ======================================================
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "construction-alert-engine");
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 
@@ -85,6 +88,6 @@ public class ConstructionAlertStreamApp {
 
         System.out.println("🚨 Phase 8 Alert Engine started");
 
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+        return streams;
     }
 }
