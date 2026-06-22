@@ -38,3 +38,17 @@ services:
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       EVENT_INTERVAL_MS: 7000
+
+  dbt-pipeline:
+    build:
+      context: "../../DATA OBSERVABILITY"
+      dockerfile: dockerfile.dbt
+    depends_on:
+      - kafka
+      - ksqldb
+      - construction-app
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_TOPIC: site-health-stream
+      KAFKA_EXPORT_FILE: site_health_events.json
+      MAX_MESSAGES: 100
