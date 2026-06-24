@@ -52,3 +52,40 @@ services:
       KAFKA_TOPIC: site-health-stream
       KAFKA_EXPORT_FILE: site_health_events.json
       MAX_MESSAGES: 100
+
+  dbt-docs:
+    build:
+      context: ../../DATA OBSERVABILITY
+      dockerfile: dockerfile.dbt
+
+    environment:
+      DBT_PROFILES_DIR: /app
+
+    command: >
+      sh -c "cd construction_elt_project &&
+            dbt docs serve --host 0.0.0.0 --port 8080"
+
+    ports:
+      - "8081:8080"
+
+  # duckdb-ui:
+  #   build:
+  #     context: "../../DATA OBSERVABILITY"
+  #     dockerfile: dockerfile.dbt
+  #   working_dir: /app/construction_elt_project
+  #   command: >
+  #     sh -c "duckdb -ui dev.duckdb && tail -f /dev/null"
+  #   ports:
+  #     - "4213:4213"
+
+  construction-dashboard:
+    build:
+      context: "../construction-dashboard"
+      dockerfile: dockerfile
+    depends_on:
+      - kafka
+      - ksqldb
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Construction Dashboard</title>
+</head>
+    <body>
+        <header>
+            <h1>🏗️ Construction Intelligence Platform</h1>
+        </header>
+
+        <div class="dashboard-grid">
+
+            <div class="card">
+                <h2>🚀 Pipeline Controls</h2>
+                <button onclick="runPipeline()">Run dbt Pipeline</button>
+                <button onclick="window.open('http://localhost:8081')">
+                    Open dbt Docs
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>📊 DuckDB Tables</h2>
+                <button onclick="loadTables()">Load Tables</button>
+                <ul id="tables"></ul>
+
+                <button onclick="window.open('http://localhost:4213')">
+                    Open DuckDB UI
+                </button>
+            </div>
+
+            <div class="card full-width">
+                <h2>🏗️ Site Health Summary</h2>
+                <button onclick="loadSummary()">Load Summary</button>
+                <div id="summary"></div>
+            </div>
+
+            <div class="card full-width">
+                <h2>📜 Pipeline Logs</h2>
+                <pre id="logs"></pre>
+            </div>
+
+        </div>
+    
+    
+        <script src="/js/app.js"></script>
+    </body>
+</html>
