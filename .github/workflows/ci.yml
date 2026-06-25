@@ -95,9 +95,24 @@ jobs:
         run: sleep 50
 
       
-      - name: Check construction app logs
+      - name: Debug Kafka topics and producer logs
         working-directory: data-mesh/kafka
-        run: docker compose logs construction-app
+        run: |
+          echo "=== construction-app logs ==="
+          docker compose logs construction-app
+
+          echo "=== Kafka topics ==="
+          docker compose exec -T kafka /opt/kafka/bin/kafka-topics.sh \
+            --bootstrap-server kafka:29092 \
+            --list
+
+          echo "=== Messages on site-health-stream ==="
+          docker compose exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh \
+            --bootstrap-server kafka:29092 \
+            --topic site-health-stream \
+            --from-beginning \
+            --timeout-ms 10000 \
+            --max-messages 5
 
       # -----------------------------
       # 6. Run dbt ELT pipeline
