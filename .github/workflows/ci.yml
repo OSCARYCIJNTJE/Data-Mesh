@@ -94,6 +94,11 @@ jobs:
       - name: Give producer time to create events
         run: sleep 50
 
+      
+      - name: Check construction app logs
+        working-directory: data-mesh/kafka
+        run: docker compose logs construction-app
+
       # -----------------------------
       # 6. Run dbt ELT pipeline
       # -----------------------------
@@ -102,6 +107,7 @@ jobs:
         timeout-minutes: 5
         env:
           MAX_MESSAGES: 10
+          CONSUMER_TIMEOUT_MS: 60000
         run: |
           docker compose up \
             --abort-on-container-exit \
