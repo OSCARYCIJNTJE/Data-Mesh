@@ -41,7 +41,7 @@ services:
 
   dbt-pipeline:
     build:
-      context: "../../DATA OBSERVABILITY"
+      context: ../../DATA OBSERVABILITY
       dockerfile: dockerfile.dbt
     depends_on:
       - kafka
