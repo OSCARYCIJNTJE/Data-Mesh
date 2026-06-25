@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  integration-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout data mesh + dashboard repo
+        uses: actions/checkout@v4
+        with:
+          path: data-mesh
+
+      - name: Checkout data observability repo
+        uses: actions/checkout@v4
+        with:
+          repository: OSCARYCIJNTJE/Data-observability
+          ref: ${{ github.ref_name }}
+          path: data-observability
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Docker Compose
+        working-directory: data-mesh/kafka
+        run: docker compose config
+
+      - name: Build all services
+        working-directory: data-mesh/kafka
+        run: docker compose build
+
+      - name: Start Kafka and ksqlDB
+        working-directory: data-mesh/kafka
+        run: docker compose up -d kafka ksqldb
+
+      - name: Wait for ksqlDB
+        working-directory: data-mesh/kafka
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:8088/info; then
+              echo "ksqlDB is ready"
+              exit 0
+            fi
+            echo "Waiting for ksqlDB..."
+            sleep 5
+          done
+          docker compose logs ksqldb
+          exit 1
+
+      - name: Start construction app
+        working-directory: data-mesh/kafka
+        run: docker compose up -d construction-app
+
+      - name: Run dbt pipeline
+        working-directory: data-mesh/kafka
+        run: docker compose up --abort-on-container-exit --exit-code-from dbt-pipeline dbt-pipeline
+
+      - name: Build dashboard
+        working-directory: data-mesh/kafka
+        run: docker compose build construction-dashboard
+
+      - name: Show logs on failure
+        if: failure()
+        working-directory: data-mesh/kafka
+        run: docker compose logs
+
+      - name: Shutdown
+        if: always()
+        working-directory: data-mesh/kafka
+        run: docker compose down -v
