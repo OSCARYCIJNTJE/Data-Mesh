@@ -8,9 +8,17 @@ on:
 
 jobs:
   integration-ci:
+    name: Integration CI
     runs-on: ubuntu-latest
 
+    env:
+      MAX_MESSAGES: 10
+      EVENT_INTERVAL_MS: 1000
+
     steps:
+      # -----------------------------
+      # 1. Checkout repositories
+      # -----------------------------
       - name: Checkout data mesh + dashboard repo
         uses: actions/checkout@v4
         with:
@@ -23,20 +31,41 @@ jobs:
           ref: ${{ github.ref_name }}
           path: data-observability
 
+      # -----------------------------
+      # 2. Validate Docker setup
+      # -----------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Validate Docker Compose
+      - name: Validate Docker Compose file
         working-directory: data-mesh/kafka
         run: docker compose config
 
-      - name: Build all services
+      # -----------------------------
+      # 3. Build project services
+      # -----------------------------
+      - name: Build Kafka producer app
         working-directory: data-mesh/kafka
-        run: docker compose build
+        run: docker compose build construction-app
 
-      - name: Start Kafka and ksqlDB
+      - name: Build dbt pipeline
         working-directory: data-mesh/kafka
-        run: docker compose up -d kafka ksqldb
+        run: docker compose build dbt-pipeline
+
+      - name: Build construction dashboard
+        working-directory: data-mesh/kafka
+        run: docker compose build construction-dashboard
+
+      # -----------------------------
+      # 4. Start infrastructure
+      # -----------------------------
+      - name: Start Kafka
+        working-directory: data-mesh/kafka
+        run: docker compose up -d kafka
+
+      - name: Start ksqlDB
+        working-directory: data-mesh/kafka
+        run: docker compose up -d ksqldb
 
       - name: Wait for ksqlDB
         working-directory: data-mesh/kafka
@@ -46,30 +75,62 @@ jobs:
               echo "ksqlDB is ready"
               exit 0
             fi
+
             echo "Waiting for ksqlDB..."
             sleep 5
           done
+
           docker compose logs ksqldb
           exit 1
 
-      - name: Start construction app
+      # -----------------------------
+      # 5. Run producer
+      # -----------------------------
+      - name: Start construction event producer
         working-directory: data-mesh/kafka
-        run: docker compose up -d construction-app
+        run: |
+          EVENT_INTERVAL_MS=${EVENT_INTERVAL_MS} docker compose up -d construction-app
 
+      - name: Give producer time to create events
+        run: sleep 15
+
+      # -----------------------------
+      # 6. Run dbt ELT pipeline
+      # -----------------------------
       - name: Run dbt pipeline
         working-directory: data-mesh/kafka
-        run: docker compose up --abort-on-container-exit --exit-code-from dbt-pipeline dbt-pipeline
+        run: |
+          MAX_MESSAGES=${MAX_MESSAGES} docker compose up \
+            --abort-on-container-exit \
+            --exit-code-from dbt-pipeline \
+            dbt-pipeline
 
-      - name: Build dashboard
+      # -----------------------------
+      # 7. Smoke test dashboard
+      # -----------------------------
+      - name: Start construction dashboard
         working-directory: data-mesh/kafka
-        run: docker compose build construction-dashboard
+        run: docker compose up -d construction-dashboard
 
-      - name: Show logs on failure
+      - name: Check dashboard container
+        working-directory: data-mesh/kafka
+        run: |
+          sleep 10
+          docker compose ps construction-dashboard
+          docker compose logs construction-dashboard
+
+      # -----------------------------
+      # 8. Debug on failure
+      # -----------------------------
+      - name: Show all logs on failure
         if: failure()
         working-directory: data-mesh/kafka
         run: docker compose logs
 
-      - name: Shutdown
+      # -----------------------------
+      # 9. Cleanup
+      # -----------------------------
+      - name: Shutdown containers
         if: always()
         working-directory: data-mesh/kafka
         run: docker compose down -v
