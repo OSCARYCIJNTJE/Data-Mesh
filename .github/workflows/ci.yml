@@ -99,8 +99,11 @@ jobs:
       # -----------------------------
       - name: Run dbt pipeline
         working-directory: data-mesh/kafka
+        timeout-minutes: 5
+        env:
+          MAX_MESSAGES: 10
         run: |
-          MAX_MESSAGES=${MAX_MESSAGES} docker compose up \
+          docker compose up \
             --abort-on-container-exit \
             --exit-code-from dbt-pipeline \
             dbt-pipeline
