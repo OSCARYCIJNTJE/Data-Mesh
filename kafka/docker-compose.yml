@@ -41,7 +41,7 @@ services:
 
   dbt-pipeline:
     build:
-      context: ../../DATA OBSERVABILITY
+      context: ../../data-observability
       dockerfile: dockerfile.dbt
     depends_on:
       - kafka
@@ -55,7 +55,7 @@ services:
 
   dbt-docs:
     build:
-      context: ../../DATA OBSERVABILITY
+      context: ../../data-observability
       dockerfile: dockerfile.dbt
 
     environment:
@@ -70,7 +70,7 @@ services:
 
   # duckdb-ui:
   #   build:
-  #     context: "../../DATA OBSERVABILITY"
+  #     context: "../../data-observability"
   #     dockerfile: dockerfile.dbt
   #   working_dir: /app/construction_elt_project
   #   command: >
