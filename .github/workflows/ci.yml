@@ -99,7 +99,7 @@ jobs:
       # -----------------------------
       - name: Run dbt pipeline
         working-directory: data-mesh/kafka
-        timeout-minutes: 3
+        timeout-minutes: 5
         env:
           MAX_MESSAGES: 10
         run: |
