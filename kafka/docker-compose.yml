@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
 
   kafka:
@@ -39,7 +41,7 @@ services:
 
   dbt-pipeline:
     build:
-      context: ../../data-observability
+      context: "../../DATA OBSERVABILITY"
       dockerfile: dockerfile.dbt
     depends_on:
       - kafka
@@ -49,11 +51,11 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_TOPIC: site-health-stream
       KAFKA_EXPORT_FILE: site_health_events.json
-      MAX_MESSAGES: ${MAX_MESSAGES:-10}
+      MAX_MESSAGES: 10
 
   dbt-docs:
     build:
-      context: ../../data-observability
+      context: ../../DATA OBSERVABILITY
       dockerfile: dockerfile.dbt
 
     environment:
@@ -87,3 +89,6 @@ services:
       - "8080:8080"
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/workspace
