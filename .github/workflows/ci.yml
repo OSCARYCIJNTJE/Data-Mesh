@@ -92,7 +92,7 @@ jobs:
           EVENT_INTERVAL_MS=${EVENT_INTERVAL_MS} docker compose up -d construction-app
 
       - name: Give producer time to create events
-        run: sleep 15
+        run: sleep 50
 
       # -----------------------------
       # 6. Run dbt ELT pipeline
