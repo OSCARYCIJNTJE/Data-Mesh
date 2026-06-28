@@ -31,7 +31,7 @@ services:
       KSQL_KSQL_SERVICE_ID: ksqldb_service
 
   construction-app:
-    build: .
+    image: docker pull ghcr.io/oscarycijntje/construction-app:latest
     depends_on:
       - kafka
       - ksqldb
@@ -80,8 +80,9 @@ services:
 
   construction-dashboard:
     build:
-      context: "../construction-dashboard"
-      dockerfile: dockerfile
+      image: docker pull ghcr.io/oscarycijntje/construction-dashboard:latest
+      # context: "../construction-dashboard"
+      # dockerfile: dockerfile
     depends_on:
       - kafka
       - ksqldb
