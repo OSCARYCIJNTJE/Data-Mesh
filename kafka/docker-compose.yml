@@ -45,7 +45,7 @@ services:
       - construction-app
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      KAFKA_TOPIC: deliveries
+      KAFKA_TOPIC: site-events
       KAFKA_EXPORT_FILE: site_health_events.json
       MAX_MESSAGES: ${MAX_MESSAGES:-10}
 
