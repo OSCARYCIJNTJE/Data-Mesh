@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  push:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  docker-deploy:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout data mesh + dashboard repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image names
+        run: |
+          echo "CONSTRUCTION_APP_IMAGE=ghcr.io/${{ github.repository_owner }}/construction-app:latest" >> $GITHUB_ENV
+          echo "DASHBOARD_IMAGE=ghcr.io/${{ github.repository_owner }}/construction-dashboard:latest" >> $GITHUB_ENV
+
+      - name: Build and push construction app
+        uses: docker/build-push-action@v6
+        with:
+          context: ./kafka
+          file: ./kafka/Dockerfile
+          push: true
+          tags: ${{ env.CONSTRUCTION_APP_IMAGE }}
+
+      - name: Build and push construction dashboard
+        uses: docker/build-push-action@v6
+        with:
+          context: ./construction-dashboard
+          file: ./construction-dashboard/dockerfile
+          push: true
+          tags: ${{ env.DASHBOARD_IMAGE }}
