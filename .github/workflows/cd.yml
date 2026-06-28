@@ -36,6 +36,7 @@ jobs:
         run: |
           echo "CONSTRUCTION_APP_IMAGE=ghcr.io/${OWNER_LC}/construction-app:latest" >> $GITHUB_ENV
           echo "DASHBOARD_IMAGE=ghcr.io/${OWNER_LC}/construction-dashboard:latest" >> $GITHUB_ENV
+          echo "DBT_PIPELINE_IMAGE=ghcr.io/${OWNER_LC}/dbt-pipeline:latest" >> $GITHUB_ENV
 
       - name: Build and push construction app
         uses: docker/build-push-action@v6
@@ -52,3 +53,18 @@ jobs:
           file: ./construction-dashboard/dockerfile
           push: true
           tags: ${{ env.DASHBOARD_IMAGE }}
+
+      - name: Checkout data observability repo
+        uses: actions/checkout@v4
+        with:
+          repository: OSCARYCIJNTJE/Data-observability
+          ref: ${{ github.event.workflow_run.head_branch }}
+          path: data-observability
+
+      - name: Build and push dbt pipeline
+        uses: docker/build-push-action@v6
+        with:
+          context: ./data-observability
+          file: ./data-observability/dockerfile.dbt
+          push: true
+          tags: ${{ env.DBT_PIPELINE_IMAGE }}

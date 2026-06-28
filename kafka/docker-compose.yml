@@ -35,34 +35,27 @@ services:
       - ksqldb
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      EVENT_INTERVAL_MS: 7000
-
+      EVENT_INTERVAL_MS: ${EVENT_INTERVAL_MS:-7000}
+      
   dbt-pipeline:
-    build:
-      context: ../../data-observability
-      dockerfile: dockerfile.dbt
+    image: ghcr.io/oscarycijntje/dbt-pipeline:latest
     depends_on:
       - kafka
       - ksqldb
       - construction-app
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      KAFKA_TOPIC: site-health-stream
+      KAFKA_TOPIC: deliveries
       KAFKA_EXPORT_FILE: site_health_events.json
-      MAX_MESSAGES: 10
+      MAX_MESSAGES: ${MAX_MESSAGES:-10}
 
   dbt-docs:
-    build:
-      context: ../../data-observability
-      dockerfile: dockerfile.dbt
-
+    image: ghcr.io/oscarycijntje/dbt-pipeline:latest
     environment:
       DBT_PROFILES_DIR: /app
-
     command: >
       sh -c "cd construction_elt_project &&
             dbt docs serve --host 0.0.0.0 --port 8080"
-
     ports:
       - "8081:8080"
 
@@ -78,8 +71,6 @@ services:
 
   construction-dashboard:
     image: ghcr.io/oscarycijntje/construction-dashboard:latest
-      # context: "../construction-dashboard"
-      # dockerfile: dockerfile
     depends_on:
       - kafka
       - ksqldb
@@ -87,6 +78,3 @@ services:
       - "8080:8080"
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./:/workspace
