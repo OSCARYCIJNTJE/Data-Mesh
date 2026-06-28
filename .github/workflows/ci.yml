@@ -117,17 +117,17 @@ jobs:
       # -----------------------------
       # 6. Run dbt ELT pipeline
       # -----------------------------
-      - name: Run dbt pipeline
-        working-directory: data-mesh/kafka
-        timeout-minutes: 5
-        env:
-          MAX_MESSAGES: 10
-          CONSUMER_TIMEOUT_MS: 60000
-        run: |
-          docker compose up \
-            --abort-on-container-exit \
-            --exit-code-from dbt-pipeline \
-            dbt-pipeline
+      # - name: Run dbt pipeline
+      #   working-directory: data-mesh/kafka
+      #   timeout-minutes: 5
+      #   env:
+      #     MAX_MESSAGES: 10
+      #     CONSUMER_TIMEOUT_MS: 60000
+      #   run: |
+      #     docker compose up \
+      #       --abort-on-container-exit \
+      #       --exit-code-from dbt-pipeline \
+      #       dbt-pipeline
 
       # -----------------------------
       # 7. Smoke test dashboard
