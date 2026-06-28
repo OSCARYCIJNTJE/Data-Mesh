@@ -79,8 +79,7 @@ services:
   #     - "4213:4213"
 
   construction-dashboard:
-    build:
-      image: docker pull ghcr.io/oscarycijntje/construction-dashboard:latest
+    image: docker pull ghcr.io/oscarycijntje/construction-dashboard:latest
       # context: "../construction-dashboard"
       # dockerfile: dockerfile
     depends_on:
